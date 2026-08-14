@@ -54,10 +54,17 @@ class TinyImageNetValDataset(Dataset):
 
 def get_train_transform():
     return transforms.Compose([
-        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-        transforms.RandomHorizontalFlip(),
+        transforms.Resize((64, 64)),
+        transforms.RandomCrop(64, padding=4),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.ColorJitter(
+            brightness=0.2,
+            contrast=0.2,
+            saturation=0.2
+        ),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        transforms.RandomErasing(p=0.25)
     ])
 
 
@@ -89,7 +96,8 @@ def get_train_val_dataloaders():
         batch_size=BATCH_SIZE,
         shuffle=True,
         num_workers=NUM_WORKERS,
-        pin_memory=PIN_MEMORY
+        pin_memory=PIN_MEMORY,
+        persistent_workers=NUM_WORKERS > 0
     )
 
     val_dataloader = DataLoader(
@@ -97,7 +105,8 @@ def get_train_val_dataloaders():
         batch_size=BATCH_SIZE,
         shuffle=False,
         num_workers=NUM_WORKERS,
-        pin_memory=PIN_MEMORY
+        pin_memory=PIN_MEMORY,
+        persistent_workers=NUM_WORKERS > 0
     )
 
     return train_dataset, val_dataset, train_dataloader, val_dataloader

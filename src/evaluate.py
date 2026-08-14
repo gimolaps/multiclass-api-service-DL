@@ -15,7 +15,7 @@ def evaluate():
     )
     model.eval()
 
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
 
     val_current_loss = 0.0
     val_correct = 0

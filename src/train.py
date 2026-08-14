@@ -14,6 +14,9 @@ from src.config import (
 from src.model import CNN
 from src.dataset import get_train_val_dataloaders
 
+use_amp = DEVICE.type == "cuda"
+scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+
 
 def train():
     CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -23,19 +26,27 @@ def train():
 
     model = CNN().to(DEVICE)
 
-    loss_fn = nn.CrossEntropyLoss()
+    resume_path = CHECKPOINTS_DIR / "last_model.pth"
 
-    optimizer = optim.Adam(
+    if resume_path.exists():
+        model.load_state_dict(
+            torch.load(resume_path, map_location=DEVICE)
+        )
+        print(f"Loaded checkpoint: {resume_path}")
+    else:
+        print("No checkpoint found. Training from scratch.")
+
+    loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
+
+    optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=LR,
+        lr=0.001,
         weight_decay=1e-4
     )
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
-        mode="min",
-        factor=0.5,
-        patience=5
+        T_max=100
     )
 
     best_val_acc = 0.0
@@ -62,13 +73,15 @@ def train():
             images = images.to(DEVICE, non_blocking=True)
             labels = labels.to(DEVICE, non_blocking=True)
 
-            optimizer.zero_grad()
+            optimizer.zero_grad(set_to_none=True)
 
-            logits = model(images)
-            loss = loss_fn(logits, labels)
+            with torch.amp.autocast("cuda", enabled=use_amp):
+                logits = model(images)
+                loss = loss_fn(logits, labels)
 
-            loss.backward()
-            optimizer.step()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             current_loss += loss.item()
 
@@ -107,7 +120,7 @@ def train():
         val_loss = val_current_loss / len(val_dataloader)
         val_acc = 100 * val_correct / val_total
 
-        scheduler.step(val_loss)
+        scheduler.step()
 
         epoch_result = {
             "epoch": epoch + 1,
