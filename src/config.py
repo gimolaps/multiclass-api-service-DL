@@ -15,7 +15,7 @@ WORDS_FILE = DATA_DIR / "words.txt"
 IMAGE_SIZE = 64
 BATCH_SIZE = 512
 NUM_CLASSES = 200
-EPOCHS = 200
+EPOCHS = 150
 LR = 0.001
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

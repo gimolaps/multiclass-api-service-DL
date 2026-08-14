@@ -36,17 +36,19 @@ def train():
     else:
         print("No checkpoint found. Training from scratch.")
 
-    loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
+    loss_fn = nn.CrossEntropyLoss(label_smoothing=0.05)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=0.001,
+        lr=1e-5,
         weight_decay=1e-4
     )
 
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
-        T_max=100
+        mode="min",
+        factor=0.5,
+        patience=5
     )
 
     best_val_acc = 0.0
@@ -120,7 +122,7 @@ def train():
         val_loss = val_current_loss / len(val_dataloader)
         val_acc = 100 * val_correct / val_total
 
-        scheduler.step()
+        scheduler.step(val_loss)
 
         epoch_result = {
             "epoch": epoch + 1,
