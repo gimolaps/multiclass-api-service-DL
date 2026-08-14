@@ -21,3 +21,7 @@ data/test/
 Thumbs.db
 
 *.log
+
+
+best_model_v1.pth
+best_model_v2.pth
