@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiny ImageNet Classifier</title>
+    <link rel="stylesheet" href="/frontend/style.css">
+</head>
+
+<body>
+    <main class="page">
+        <section class="hero">
+            <div class="badge">Deep Learning API Demo</div>
+            <h1>Tiny ImageNet Classifier</h1>
+            <p>
+                Upload an image and get top-5 predictions from a trained CNN model.
+            </p>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Image Classification</h2>
+                    <p>Select image file and run model inference.</p>
+                </div>
+                <div class="status-pill">CNN Model</div>
+            </div>
+
+            <div class="upload-box">
+                <input id="fileInput" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                <button id="predictButton" onclick="predictImage()">Predict Image</button>
+            </div>
+
+            <div id="previewBox" class="preview-box hidden">
+                <img id="imagePreview" alt="Uploaded image preview">
+            </div>
+
+            <div id="result" class="result hidden"></div>
+
+            <div class="links">
+                <a href="/docs">API Docs</a>
+                <a href="/health">Health Check</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="/frontend/script.js"></script>
+</body>
+
+</html>
